@@ -143,7 +143,7 @@ private:
             newNode.keys[i] = node.keys[mid + 1 + i];
             newNode.children[i] = node.children[mid + 1 + i];
         }
-        newNode.children[newNode.keyCount] = node.children[node.keyCount];
+        newNode.children[newNode.keyCount] = node.children[mid + 1 + newNode.keyCount];
 
         node.keyCount = mid;
 
