@@ -228,22 +228,36 @@ private:
         }
     }
 
+    void findInLeaves(int nodeOffset, const char* index, std::vector<int>& result) {
+        if (nodeOffset == -1) return;
+
+        Node node = readNode(nodeOffset);
+        bool found = false;
+
+        for (int i = 0; i < node.keyCount; i++) {
+            if (node.keys[i].indexEqual(index)) {
+                result.push_back(node.keys[i].value);
+                found = true;
+            } else if (found) {
+                // We've passed the matching keys, stop
+                return;
+            }
+        }
+
+        // If we found matches and there might be more in the next leaf
+        if (found && node.next != -1) {
+            Node nextNode = readNode(node.next);
+            if (nextNode.keyCount > 0 && nextNode.keys[0].indexEqual(index)) {
+                findInLeaves(node.next, index, result);
+            }
+        }
+    }
+
     void findRecursive(int nodeOffset, const char* index, std::vector<int>& result) {
         Node node = readNode(nodeOffset);
 
         if (node.isLeaf) {
-            for (int i = 0; i < node.keyCount; i++) {
-                if (node.keys[i].indexEqual(index)) {
-                    result.push_back(node.keys[i].value);
-                }
-            }
-            // Check next leaf if it exists
-            if (node.next != -1) {
-                Node nextNode = readNode(node.next);
-                if (nextNode.keyCount > 0 && nextNode.keys[0].indexEqual(index)) {
-                    findRecursive(node.next, index, result);
-                }
-            }
+            findInLeaves(nodeOffset, index, result);
         } else {
             // Navigate to the correct child
             Key searchKey(index, 0);
