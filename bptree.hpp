@@ -237,23 +237,18 @@ private:
                     result.push_back(node.keys[i].value);
                 }
             }
+            // Check next leaf if it exists
+            if (node.next != -1) {
+                Node nextNode = readNode(node.next);
+                if (nextNode.keyCount > 0 && nextNode.keys[0].indexEqual(index)) {
+                    findRecursive(node.next, index, result);
+                }
+            }
         } else {
-            // Find the range of children that might contain the index
-            int start = 0;
-            while (start < node.keyCount && strcmp(node.keys[start].index, index) < 0) {
-                start++;
-            }
-
-            // Check if we need to search the child before the first key
-            if (start == 0 || strcmp(node.keys[start - 1].index, index) < 0) {
-                findRecursive(node.children[start], index, result);
-            }
-
-            // Continue searching in next children if keys match
-            while (start < node.keyCount && strcmp(node.keys[start].index, index) == 0) {
-                findRecursive(node.children[start + 1], index, result);
-                start++;
-            }
+            // Navigate to the correct child
+            Key searchKey(index, 0);
+            int childIndex = findChild(node, searchKey);
+            findRecursive(node.children[childIndex], index, result);
         }
     }
 
