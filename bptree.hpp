@@ -4,9 +4,10 @@
 #include <fstream>
 #include <cstring>
 #include <algorithm>
+#include <vector>
 
 const int MAX_KEY_LEN = 65;
-const int ORDER = 100;  // B+ tree order
+const int ORDER = 50;  // B+ tree order
 const int MIN_KEYS = ORDER / 2;
 
 struct Key {
@@ -232,24 +233,24 @@ private:
         if (nodeOffset == -1) return;
 
         Node node = readNode(nodeOffset);
-        bool found = false;
+        bool foundAny = false;
+        bool stillMatching = false;
 
         for (int i = 0; i < node.keyCount; i++) {
             if (node.keys[i].indexEqual(index)) {
                 result.push_back(node.keys[i].value);
-                found = true;
-            } else if (found) {
-                // We've passed the matching keys, stop
-                return;
+                foundAny = true;
+                stillMatching = true;
+            } else if (foundAny) {
+                // We've passed all matching keys in this node
+                stillMatching = false;
+                break;
             }
         }
 
-        // If we found matches and there might be more in the next leaf
-        if (found && node.next != -1) {
-            Node nextNode = readNode(node.next);
-            if (nextNode.keyCount > 0 && nextNode.keys[0].indexEqual(index)) {
-                findInLeaves(node.next, index, result);
-            }
+        // Continue to next leaf only if we found matches at the end
+        if (stillMatching && node.next != -1) {
+            findInLeaves(node.next, index, result);
         }
     }
 
