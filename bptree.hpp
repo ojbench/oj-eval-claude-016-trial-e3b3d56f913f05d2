@@ -41,8 +41,8 @@ struct Key {
 struct Node {
     bool isLeaf;
     int keyCount;
-    Key keys[ORDER];
-    int children[ORDER + 1];  // File offsets for internal nodes
+    Key keys[ORDER + 1];  // Extra space for temporary overflow before split
+    int children[ORDER + 2];  // File offsets for internal nodes
     int next;  // Next leaf node (for leaf nodes only)
 
     Node() : isLeaf(true), keyCount(0), next(-1) {
