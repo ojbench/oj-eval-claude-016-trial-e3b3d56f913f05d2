@@ -60,6 +60,7 @@ private:
     int allocateNode() {
         int offset = freeOffset;
         freeOffset += sizeof(Node);
+        writeHeader();  // Update header to persist freeOffset
         return offset;
     }
 
